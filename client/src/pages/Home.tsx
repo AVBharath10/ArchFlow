@@ -3,9 +3,11 @@ import { CreateProjectDialog } from "@/components/CreateProjectDialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useProjects } from "@/hooks/use-projects";
-import { ArrowRight, Box, Code2, Network, Zap } from "lucide-react";
+import { ArrowRight, Box, Code2, Network, Zap, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
+import { useUser, useLogout } from "@/hooks/use-user";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 function LandingHero() {
   return (
@@ -28,7 +30,7 @@ function LandingHero() {
             </span>
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-muted-foreground mb-10 leading-relaxed">
-            Drag-and-drop services, endpoints, and data models to visualize your API architecture. 
+            Drag-and-drop services, endpoints, and data models to visualize your API architecture.
             Export OpenAPI specs automatically. Built for developers who care about design.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -40,9 +42,9 @@ function LandingHero() {
             </Button>
           </div>
         </motion.div>
-        
+
         {/* Mockup / Visual */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.7 }}
@@ -58,13 +60,13 @@ function LandingHero() {
             {/* Abstract representation of canvas */}
             <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent pointer-events-none" />
             <div className="flex gap-12 items-center opacity-80">
-               <div className="w-32 h-32 rounded-lg border-2 border-primary/50 bg-primary/10 flex items-center justify-center">
-                 <Box className="w-12 h-12 text-primary" />
-               </div>
-               <div className="h-0.5 w-24 bg-gradient-to-r from-primary/50 to-blue-500/50" />
-               <div className="w-32 h-32 rounded-lg border-2 border-blue-500/50 bg-blue-500/10 flex items-center justify-center">
-                 <Network className="w-12 h-12 text-blue-500" />
-               </div>
+              <div className="w-32 h-32 rounded-lg border-2 border-primary/50 bg-primary/10 flex items-center justify-center">
+                <Box className="w-12 h-12 text-primary" />
+              </div>
+              <div className="h-0.5 w-24 bg-gradient-to-r from-primary/50 to-blue-500/50" />
+              <div className="w-32 h-32 rounded-lg border-2 border-blue-500/50 bg-blue-500/10 flex items-center justify-center">
+                <Network className="w-12 h-12 text-blue-500" />
+              </div>
             </div>
           </div>
         </motion.div>
@@ -134,6 +136,9 @@ function ProjectList() {
 }
 
 export default function Home() {
+  const { data: user } = useUser();
+  const logout = useLogout();
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-border/40 backdrop-blur-md sticky top-0 z-50 bg-background/80">
@@ -145,18 +150,39 @@ export default function Home() {
             ArchFlow
           </div>
           <nav className="flex items-center gap-4">
-            <a href="https://github.com" target="_blank" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              GitHub
-            </a>
-            <Button variant="ghost" size="sm">Sign In</Button>
-            <Button size="sm">Get Started</Button>
+            {user ? (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.avatarUrl || undefined} />
+                    <AvatarFallback>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium hidden sm:inline-block">{user.username}</span>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => logout.mutate()}>
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              <>
+                <a href="https://github.com" target="_blank" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  GitHub
+                </a>
+                <Link href="/auth">
+                  <Button variant="ghost" size="sm">Sign In</Button>
+                </Link>
+                <Link href="/auth">
+                  <Button size="sm">Get Started</Button>
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </header>
 
       <main className="flex-1">
         <LandingHero />
-        
+
         <section id="projects" className="py-24 bg-secondary/20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-12">
@@ -164,10 +190,27 @@ export default function Home() {
                 <h2 className="text-3xl font-bold tracking-tight">Your Projects</h2>
                 <p className="text-muted-foreground mt-1">Manage your architecture diagrams</p>
               </div>
-              <CreateProjectDialog />
+              {user && <CreateProjectDialog />}
             </div>
-            
-            <ProjectList />
+
+            {user ? (
+              <ProjectList />
+            ) : (
+              <div className="text-center py-24 border border-dashed border-border rounded-xl bg-muted/5">
+                <div className="flex justify-center mb-4">
+                  <div className="p-4 rounded-full bg-primary/10 text-primary">
+                    <Zap className="w-8 h-8" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-medium text-foreground mb-2">Sign in to view projects</h3>
+                <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+                  Create an account or sign in to start building and saving your architecture diagrams.
+                </p>
+                <Link href="/auth">
+                  <Button size="lg" className="px-8">Get Started</Button>
+                </Link>
+              </div>
+            )}
           </div>
         </section>
       </main>

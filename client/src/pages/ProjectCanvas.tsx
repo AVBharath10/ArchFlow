@@ -19,17 +19,18 @@ import { useDebouncedCallback } from 'use-debounce';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  ArrowLeft, 
-  Save, 
-  Server, 
-  Globe, 
-  Database, 
-  Share2, 
+import {
+  ArrowLeft,
+  Save,
+  Server,
+  Globe,
+  Database,
+  Share2,
   Download,
   Loader2,
   Box,
-  Layers
+  Layers,
+  LogOut
 } from "lucide-react";
 import { nodeTypes, ServiceNode, EndpointNode, ModelNode } from "@/components/canvas/CustomNodes";
 import { InspectorPanel } from "@/components/canvas/InspectorPanel";
@@ -39,6 +40,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useUser, useLogout } from "@/hooks/use-user";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Define node types map
 const NODE_TYPES = {
@@ -50,11 +53,14 @@ const NODE_TYPES = {
 function CanvasContent({ projectId }: { projectId: number }) {
   const { data: project, isLoading } = useProject(projectId);
   const updateProject = useUpdateProject();
-  
+
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  const { data: user } = useUser();
+  const logout = useLogout();
 
   // Initialize canvas from DB
   useEffect(() => {
@@ -70,9 +76,9 @@ function CanvasContent({ projectId }: { projectId: number }) {
     if (!project) return;
     setIsSaving(true);
     updateProject.mutate(
-      { 
-        id: projectId, 
-        canvasState: { nodes: newNodes, edges: newEdges } 
+      {
+        id: projectId,
+        canvasState: { nodes: newNodes, edges: newEdges }
       },
       {
         onSettled: () => setIsSaving(false)
@@ -111,21 +117,21 @@ function CanvasContent({ projectId }: { projectId: number }) {
     const newNode: Node = {
       id,
       type,
-      position: { 
-        x: Math.random() * 400 + 100, 
-        y: Math.random() * 400 + 100 
+      position: {
+        x: Math.random() * 400 + 100,
+        y: Math.random() * 400 + 100
       },
-      data: type === 'service' 
+      data: type === 'service'
         ? { label: 'New Service', description: '' }
-        : type === 'endpoint' 
-        ? { label: 'New Endpoint', method: 'GET', path: '/api/resource' }
-        : { label: 'New Model', fields: 'id: string' }
+        : type === 'endpoint'
+          ? { label: 'New Endpoint', method: 'GET', path: '/api/resource' }
+          : { label: 'New Model', fields: 'id: string' }
     };
     setNodes((nds) => [...nds, newNode]);
   };
 
   const updateNodeData = (id: string, data: any) => {
-    setNodes((nds) => 
+    setNodes((nds) =>
       nds.map((node) => {
         if (node.id === id) {
           const updated = { ...node, data: { ...node.data, ...data } };
@@ -176,12 +182,19 @@ function CanvasContent({ projectId }: { projectId: number }) {
         </div>
 
         <div className="flex items-center gap-2">
-           <Button variant="outline" size="sm" className="h-8 gap-2 text-xs">
-             <Share2 className="w-3.5 h-3.5" /> Share
-           </Button>
-           <Button variant="default" size="sm" className="h-8 gap-2 text-xs bg-primary hover:bg-primary/90">
-             <Download className="w-3.5 h-3.5" /> Export OpenAPI
-           </Button>
+          <Button variant="outline" size="sm" className="h-8 gap-2 text-xs">
+            <Share2 className="w-3.5 h-3.5" /> Share
+          </Button>
+          <Button variant="default" size="sm" className="h-8 gap-2 text-xs bg-primary hover:bg-primary/90 mr-2">
+            <Download className="w-3.5 h-3.5" /> Export
+          </Button>
+
+          {user && (
+            <Avatar className="h-8 w-8 ml-2">
+              <AvatarImage src={user.avatarUrl || undefined} />
+              <AvatarFallback>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
+          )}
         </div>
       </header>
 
@@ -191,9 +204,9 @@ function CanvasContent({ projectId }: { projectId: number }) {
         <div className="absolute left-4 top-4 z-10 flex flex-col gap-2 p-2 bg-card/90 backdrop-blur border border-border rounded-lg shadow-xl w-14 items-center">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => addNode('service')}
                 className="hover:bg-primary/20 hover:text-primary"
               >
@@ -205,9 +218,9 @@ function CanvasContent({ projectId }: { projectId: number }) {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => addNode('endpoint')}
                 className="hover:bg-primary/20 hover:text-primary"
               >
@@ -219,9 +232,9 @@ function CanvasContent({ projectId }: { projectId: number }) {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => addNode('model')}
                 className="hover:bg-primary/20 hover:text-primary"
               >
@@ -230,9 +243,9 @@ function CanvasContent({ projectId }: { projectId: number }) {
             </TooltipTrigger>
             <TooltipContent side="right">Add Model</TooltipContent>
           </Tooltip>
-          
+
           <div className="w-8 h-[1px] bg-border my-1" />
-          
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" className="text-muted-foreground">
@@ -266,7 +279,7 @@ function CanvasContent({ projectId }: { projectId: number }) {
           >
             <Background color="hsl(var(--muted-foreground))" gap={16} size={1} className="opacity-10" />
             <Controls className="bg-card border-border shadow-lg" />
-            <MiniMap 
+            <MiniMap
               className="bg-card border-border shadow-lg"
               maskColor="rgba(0,0,0,0.6)"
               nodeColor={(n) => {
@@ -282,8 +295,8 @@ function CanvasContent({ projectId }: { projectId: number }) {
         </div>
 
         {/* Inspector Sidebar */}
-        <InspectorPanel 
-          selectedNode={selectedNode} 
+        <InspectorPanel
+          selectedNode={selectedNode}
           onUpdateNode={updateNodeData}
           onDeleteNode={deleteNode}
         />

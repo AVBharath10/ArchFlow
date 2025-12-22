@@ -8,34 +8,61 @@ import {
 } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
+import { users, type User, type InsertUser } from "@shared/schema";
+
 export interface IStorage {
+  getUser(id: number): Promise<User | undefined>;
+  getUserByGoogleId(googleId: string): Promise<User | undefined>;
+  getUserByGithubId(githubId: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+
   getProject(id: number): Promise<Project | undefined>;
-  createProject(project: InsertProject): Promise<Project>;
+  createProject(project: InsertProject & { userId: number }): Promise<Project>;
   updateProject(id: number, project: Partial<InsertProject>): Promise<Project>;
-  listProjects(): Promise<Project[]>;
+  listProjects(userId: number): Promise<Project[]>;
 }
 
 export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
+    return user;
+  }
+
+  async getUserByGithubId(githubId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.githubId, githubId));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+
   async getProject(id: number): Promise<Project | undefined> {
     const [project] = await db.select().from(projects).where(eq(projects.id, id));
     return project;
   }
 
-  async createProject(insertProject: InsertProject): Promise<Project> {
-    const [project] = await db.insert(projects).values(insertProject).returning();
+  async createProject(insertProject: InsertProject & { userId: number }): Promise<Project> {
+    const [project] = await db.insert(projects).values(insertProject as any).returning();
     return project;
   }
 
   async updateProject(id: number, updates: Partial<InsertProject>): Promise<Project> {
     const [project] = await db.update(projects)
-      .set(updates)
+      .set(updates as any)
       .where(eq(projects.id, id))
       .returning();
     return project;
   }
 
-  async listProjects(): Promise<Project[]> {
-    return await db.select().from(projects);
+  async listProjects(userId: number): Promise<Project[]> {
+    return await db.select().from(projects).where(eq(projects.userId, userId));
   }
 }
 
