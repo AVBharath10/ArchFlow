@@ -1,0 +1,450 @@
+You are an expert full-stack engineer.
+Generate a minimal but production-style v1 scaffold for a project called “CodeCanvas – Figma for Backend APIs”.
+Follow all instructions carefully and explain what you create.
+
+1. Tech stack
+Use this stack:
+
+Frontend:
+
+React + TypeScript
+
+Vite or Next.js (choose one and state why)
+
+Tailwind CSS with dark theme as default using class-based dark mode.
+​
+
+Excalidraw (embedded React component) for the canvas.
+​
+
+Backend:
+
+Node.js + Express
+
+TypeScript
+
+Simple in-memory store or SQLite for v1 (no full Postgres yet, just keep it pluggable).
+
+Realtime:
+
+Socket.io for basic collaboration (multiple users in same canvas room).
+​
+
+Project style:
+
+Monorepo or single repo that runs frontend + backend with one command.
+
+Ready to be later deployed to Railway/Render/Vercel.
+
+2. Product concept (v1 scope only)
+Implement only v1, not the full future vision.
+
+Goal: A dark-themed web app where a user can:
+
+Create a “project”.
+
+Open a canvas for that project.
+
+On the canvas, add three node types:
+
+Service (box)
+
+Endpoint (box)
+
+Model (box)
+
+Draw simple connections between nodes (Excalidraw arrows are fine).
+
+For v1, treat the canvas as a graph editor that is internally aware of node metadata:
+
+Each node stores a small JSON payload (e.g. for Endpoint: method, path, summary).
+
+User can edit this metadata via a side panel form.
+
+From this canvas state, generate:
+
+A minimal OpenAPI 3.0 JSON object in memory with:
+
+paths derived from Endpoint nodes.
+
+components.schemas derived from Model nodes.
+
+A simple read-only “Generated Spec” panel that shows this JSON.
+
+No auth, no billing, no database migrations needed in v1.
+
+3. Pages / routes to implement
+Implement these:
+
+/ – Landing page (dark, simple):
+
+App name, tagline “Figma for Backend APIs”.
+
+CTA button “Start Designing” → creates a demo project and redirects to its canvas.
+
+/projects/:id – Project canvas page:
+
+Left sidebar: project name, “nodes” palette with buttons: Add Service, Add Endpoint, Add Model.
+
+Center: Excalidraw canvas with nodes and connections.
+
+Right sidebar:
+
+Node details form (based on selected node type).
+
+Tab: “Generated OpenAPI” showing live-updated JSON.
+
+4. Realtime collaboration (simplified)
+Implement a basic collaboration layer:
+
+When a project page loads, connect to Socket.io room project:<id>.
+
+Broadcast canvas updates (nodes and their metadata) to other clients in the same room.
+
+Simple last-write-wins is fine; no need for OT/CRDT in v1.
+​
+
+If collaboration is too heavy to fully finish, at least:
+
+Structure the code so there is a clear syncCanvasState(projectId, state) API + Socket.io event handlers, even if initially mocked.
+
+5. OpenAPI generation logic
+Implement a small, well-structured module that:
+
+Accepts the current canvas state (nodes + edges).
+
+Filters Endpoint nodes and Model nodes.
+
+Produces a valid minimal OpenAPI 3.0 JSON:
+
+openapi, info, paths, components.schemas.
+​
+
+No external OpenAPI libraries are required for v1; plain TypeScript is fine.
+Document with comments how this module could later be swapped out for a more powerful OpenAPI library.
+
+6. Dark UI and layout
+UI requirements:
+
+Global dark theme by default (Tailwind dark class on <html> or <body>).
+​
+
+Layout on project page: responsive 3-column layout (sidebar – canvas – sidebar).
+
+Use a modern dark SaaS style:
+
+Neutral background, subtle borders, accent color for primary buttons.
+
+Simple top nav with project name and placeholder user avatar.
+
+You do not need fancy branding; just clean dark UI with Tailwind.
+
+7. Project structure and scripts
+Set up:
+
+Clear folder structure, for example:
+
+frontend/
+
+backend/
+
+NPM scripts to run both with one command, e.g. "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"" (include concurrently as a dependency).
+​
+
+Also:
+
+Add basic README describing:
+
+How to install.
+
+How to run dev mode.
+
+Brief explanation of architecture and v1 limitations.
+
+8. Code quality expectations
+When generating the code:
+
+Use TypeScript types for core entities: CanvasNode, NodeType, EndpointMeta, ModelMeta.
+
+Keep components small and focused; separate canvas logic, side panels, and OpenAPI generator.
+
+Add inline comments for tricky parts (e.g. how canvas state maps to OpenAPI).
+
+9. Output format for this response
+First, summarize what you built.
+
+Then list the file/folder structure.
+
+Then show the key files’ content (e.g. main server file, main React page, OpenAPI generator module).
+
+Do not leave large chunks as “…”. If you omit anything, explain clearly what remains and why.
+
+Use this prompt to generate the initial v1 scaffold in Replit, then there can be iteration together on specific parts (canvas model, OpenAPI mapping, real-time sync) piece by piece.
+​
+
+why sqlite bruh , later we have to struggle from there ?? and we can use next for the frontend itself ig that will be good , refactor the prompt and give again pls
+Reviewed 20 sources
+You’re right to skip SQLite if you already know you’ll want Postgres + Next from day 1 bruh. Here’s a refined Replit prompt with that baked in and cleaned up for better prompt engineering.
+​
+
+Replit prompt for CodeCanvas v1 (Next.js + Postgres, dark)
+You are an expert full‑stack engineer.
+Generate a minimal but production‑style v1 scaffold for a project called “CodeCanvas – Figma for Backend APIs”.
+Follow all instructions carefully and explain what you create.
+
+1. Tech stack
+Use this stack:
+
+Framework: Next.js (App Router) + TypeScript (full‑stack in one repo).
+​
+
+Styling: Tailwind CSS, with dark theme as default using class-based dark mode.
+​
+
+Canvas: Excalidraw React component embedded in a Next.js client component.
+​
+
+Backend (inside Next):
+
+Next.js Route Handlers (app/api/...) for REST APIs.
+
+PostgreSQL as the main database (not SQLite), with a small ORM/DB layer (you can choose Prisma or a lightweight query builder, but set it up for Postgres).
+​
+
+Realtime: Socket.io running on a small Node/Express server in the same Replit project (or integrated via a custom server) for basic collaboration.
+
+Explain how to run both Next and the Socket.io server on Replit together.
+​
+
+2. Product concept (v1 scope only)
+Implement only v1, not the full long‑term vision.
+
+Goal: A dark-themed web app where a user can:
+
+Create a Project (stored in Postgres).
+
+Open a Canvas for that project.
+
+On the canvas, add three node types:
+
+Service
+
+Endpoint
+
+Model
+
+Draw simple connections between nodes (using Excalidraw arrows is fine).
+
+Each node should have associated metadata stored in your own state:
+
+Service → name, description.
+
+Endpoint → method (GET/POST/etc), path, summary.
+
+Model → name, fields (a simple string for v1 is okay).
+
+Users can select a node and edit its metadata via a sidebar form.
+Persist the project + canvas JSON in Postgres in a table like projects with a canvas_state JSONB column (or a separate canvas_snapshots table).
+
+From the current canvas state, generate:
+
+A minimal OpenAPI 3.0 JSON object in memory with:
+
+paths derived from Endpoint nodes.
+
+components.schemas derived from Model nodes.
+​
+
+Show this JSON in a read-only “Generated Spec” panel on the right side.
+
+No auth, no billing, no organizations in v1.
+
+3. Next.js routes / pages
+Implement these routes in the App Router:
+
+/ – Landing page (dark):
+
+Name + tagline: “CodeCanvas – Figma for Backend APIs”.
+
+CTA button “Create demo project” which:
+
+Calls an API route to create a demo project in Postgres.
+
+Redirects to /projects/[id].
+
+/projects/[id] – Project canvas page:
+
+Layout:
+
+Left sidebar:
+
+Project name.
+
+Buttons: “Add Service”, “Add Endpoint”, “Add Model”.
+
+List of nodes in the project.
+
+Center: Excalidraw canvas showing nodes + arrows.
+
+Right sidebar:
+
+Node details form (based on selected node type).
+
+Tab to view the generated OpenAPI JSON.
+
+Use server components where appropriate, but the canvas itself should be a client component.
+
+4. Realtime collaboration (simplified)
+Implement a basic Socket.io integration:
+
+Create a small server/socket-server.ts (or similar) running an Express + Socket.io server.
+
+When /projects/[id] loads:
+
+Connect to Socket.io room project:<id>.
+
+Sync canvas state: when one client updates the canvas, broadcast the new state to others in the same room.
+​
+​
+
+For v1:
+
+A simple last‑write‑wins approach is enough.
+
+If full integration is too complex, at least scaffold:
+
+Socket.io connection code.
+
+Event handlers like canvas:update and canvas:load.
+
+Comments showing where to plug actual DB persistence.
+
+5. Data model (Postgres)
+Design a minimal schema in Postgres:
+
+projects
+
+id (UUID or serial)
+
+name (text)
+
+canvas_state (JSON/JSONB) – stores nodes and edges for v1
+
+created_at, updated_at
+
+Optionally prepare for the future:
+
+A separate project_versions table to store snapshots, but do not implement full version diffing yet.
+
+Provide:
+
+SQL or ORM schema for these tables, clearly set up for PostgreSQL (not SQLite).
+​
+
+A small database utility module to connect to Postgres using environment variables.
+
+6. OpenAPI generation module
+Create a dedicated TypeScript module, e.g. lib/openapi/generator.ts, that:
+
+Takes the current canvas state (nodes + edges) as input.
+
+Filters Endpoint and Model nodes.
+
+Produces a valid minimal OpenAPI 3.0 JSON object:
+
+openapi: "3.0.0"
+
+info (name, version)
+
+paths from Endpoint nodes (method + path + summary).
+
+components.schemas from Model nodes (you can generate a simple schema from the fields string).
+​
+
+Comment clearly where this can later be replaced with a richer OpenAPI library.
+
+7. Dark UI and layout
+UI requirements:
+
+Global dark theme by default using Tailwind’s dark mode with class strategy.
+​
+
+Apply a dark class at the root layout so the whole app is dark.
+
+Use a 3‑column layout on /projects/[id]:
+
+Left (sidebar): width ~ 260px.
+
+Center (canvas): flex‑1.
+
+Right (sidebar): width ~ 320px.
+
+Visual style:
+
+Dark background, subtle borders, muted neutrals.
+
+One accent color for primary buttons and highlights (e.g. teal or violet).
+
+Simple top bar on the project page with project name and a placeholder user avatar.
+
+8. Project structure and scripts (Replit-friendly)
+Set up:
+
+A single Next.js app repo, but also include the Socket.io server inside the same Repl.
+
+Example structure:
+
+app/ (Next.js App Router)
+
+components/
+
+lib/ (DB + OpenAPI + shared types)
+
+server/socket-server.ts
+
+NPM scripts:
+
+"dev:next": "next dev"
+
+"dev:socket": "ts-node server/socket-server.ts" (or similar)
+
+"dev": "concurrently \"npm run dev:next\" \"npm run dev:socket\""
+
+Explain how to configure Replit’s run command to start the dev environment.
+​
+
+9. Code quality expectations
+When generating the code:
+
+Use TypeScript types/interfaces for:
+
+CanvasNode
+
+NodeType (union of "service" | "endpoint" | "model")
+
+EndpointMeta, ServiceMeta, ModelMeta
+
+CanvasState (nodes + edges).
+
+Keep components and modules small and cohesive:
+
+Separate canvas component, sidebars, and OpenAPI generator.
+
+Avoid putting all logic into a single file.
+
+Add brief comments for complex parts, especially:
+
+How canvas state maps to OpenAPI data.
+
+How Socket.io events relate to saving/loading project state.
+
+10. Output format for this response
+In your response:
+
+Summarize what you built (1–2 paragraphs).
+
+Show the folder/file structure.
+
+Show the key files’ content (e.g. main Next layout/page, canvas component, OpenAPI generator, DB config, socket server).
+
+If any boilerplate is omitted, clearly state what is omitted and why, and ensure the project is still runnable with minimal extra work.
