@@ -20,12 +20,13 @@ Stay tuned for updates!
 -   **Project Management**: Organize your designs into multiple projects.
 -   **Real-time Updates**: (Planned/Partial) Collaborative features for team design.
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 -   **Frontend**: React, Vite, TypeScript, TailwindCSS, Shadcn UI, React Flow, Framer Motion.
 -   **Backend**: Node.js, Express, Passport.js (Authentication).
 -   **Database**: PostgreSQL, Drizzle ORM.
 -   **Language**: TypeScript (Fullstack).
+
 
 ## License
 
