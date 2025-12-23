@@ -182,6 +182,27 @@ function CanvasContent({ projectId }: { projectId: number }) {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-2 text-xs"
+            onClick={() => {
+              setIsSaving(true);
+              updateProject.mutate(
+                {
+                  id: projectId,
+                  canvasState: { nodes, edges }
+                },
+                {
+                  onSettled: () => setIsSaving(false)
+                }
+              );
+            }}
+            disabled={isSaving}
+          >
+            <Save className="w-3.5 h-3.5" />
+            Save
+          </Button>
           <Button variant="outline" size="sm" className="h-8 gap-2 text-xs">
             <Share2 className="w-3.5 h-3.5" /> Share
           </Button>

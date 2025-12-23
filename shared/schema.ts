@@ -10,7 +10,7 @@ export const users = pgTable("users", {
   googleId: text("google_id"),
   githubId: text("github_id"),
   avatarUrl: text("avatar_url"),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
 export const projects = pgTable("projects", {
@@ -18,7 +18,7 @@ export const projects = pgTable("projects", {
   name: text("name").notNull(),
   userId: integer("user_id").references(() => users.id), // Link project to user
   canvasState: jsonb("canvas_state").$type<CanvasState>().default({ nodes: [], edges: [] }),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
 export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, userId: true, createdAt: true });

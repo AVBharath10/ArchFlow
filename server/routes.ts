@@ -20,18 +20,18 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   // Auth Routes
-  app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+  app.get("/api/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
   app.get(
-    "/auth/google/callback",
+    "/api/auth/callback/google",
     passport.authenticate("google", { failureRedirect: "/auth" }),
     (req, res) => {
       res.redirect("/");
     }
   );
 
-  app.get("/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
+  app.get("/api/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
   app.get(
-    "/auth/github/callback",
+    "/api/auth/callback/github",
     passport.authenticate("github", { failureRedirect: "/auth" }),
     (req, res) => {
       res.redirect("/");

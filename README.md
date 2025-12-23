@@ -1,47 +1,32 @@
-# Asset Manager
+# ArchFlow - Visual API Architecture
 
-## Project Setup
+ArchFlow is a powerful visual tool designed to help developers design their backend architecture like a pro. With a drag-and-drop interface, you can effortlessly create and manage services, endpoints, and data models, visualizing your entire API structure in one place.
 
-This project uses Node.js, Express, Vite, and Drizzle ORM with PostgreSQL.
+##  About This Project
 
-### Prerequisites
+**ArchFlow** is being built in public, focusing on advanced full-stack engineering and modern web application architecture.
 
-1.  **Node.js**: Install from [nodejs.org](https://nodejs.org/).
-2.  **PostgreSQL**: Install locally or use a cloud provider.
+Currently, this project is in active development. Once the core features are polished and the system is stable, I plan to host it and open it up for public use.
 
-### Installation
+Stay tuned for updates!
 
-1.  Install dependencies:
-    ```bash
-    npm install
-    ```
+##  Features
 
-2.  Setup environment variables:
-    *   Copy `.env.example` to `.env`:
-        ```bash
-        cp .env.example .env
-        ```
-    *   Update `DATABASE_URL` in `.env` with your PostgreSQL connection string.
+-   **Visual Canvas**: Drag-and-drop interface for designing system architecture using React Flow.
+-   **Service Management**: Create and configure microservices or monolithic components.
+-   **Endpoint Design**: Define API endpoints with methods (GET, POST, PUT, DELETE) and paths.
+-   **Data Modeling**: Visualize data schemas and models.
+-   **Authentication**: Secure login with Google and GitHub OAuth.
+-   **Project Management**: Organize your designs into multiple projects.
+-   **Real-time Updates**: (Planned/Partial) Collaborative features for team design.
 
-### Database Setup
+## 🛠️ Tech Stack
 
-1.  Push the schema to the database:
-    ```bash
-    npm run db:push
-    ```
+-   **Frontend**: React, Vite, TypeScript, TailwindCSS, Shadcn UI, React Flow, Framer Motion.
+-   **Backend**: Node.js, Express, Passport.js (Authentication).
+-   **Database**: PostgreSQL, Drizzle ORM.
+-   **Language**: TypeScript (Fullstack).
 
-### Running the Application
+## License
 
-1.  Start the development server:
-    ```bash
-    npm run dev
-    ```
-
-2.  Open your browser at `http://localhost:5000`.
-
-## Scripts
-
-*   `npm run dev`: Start development server (backend + frontend).
-*   `npm run build`: Build for production.
-*   `npm start`: Start production server.
-*   `npm run db:push`: Push Drizzle schema changes to the database.
+MIT

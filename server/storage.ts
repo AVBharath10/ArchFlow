@@ -20,6 +20,8 @@ export interface IStorage {
   createProject(project: InsertProject & { userId: number }): Promise<Project>;
   updateProject(id: number, project: Partial<InsertProject>): Promise<Project>;
   listProjects(userId: number): Promise<Project[]>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  updateUser(id: number, user: Partial<InsertUser>): Promise<User>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -63,6 +65,19 @@ export class DatabaseStorage implements IStorage {
 
   async listProjects(userId: number): Promise<Project[]> {
     return await db.select().from(projects).where(eq(projects.userId, userId));
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async updateUser(id: number, updates: Partial<InsertUser>): Promise<User> {
+    const [user] = await db.update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    return user;
   }
 }
 

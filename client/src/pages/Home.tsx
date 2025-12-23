@@ -217,7 +217,7 @@ export default function Home() {
 
       <footer className="border-t border-border py-12 bg-background">
         <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
-          <p>© 2024 ArchFlow. Built for builders.</p>
+          <p>© 2025 ArchFlow. Built for builders.</p>
         </div>
       </footer>
     </div>

@@ -14,14 +14,14 @@ export function setupAuth(app: Express) {
         saveUninitialized: false,
         cookie: {},
         store: new MemoryStore({
-            checkPeriod: 86400000, // prune expired entries every 24h
+            checkPeriod: 86400000,
         }),
     };
 
     if (app.get("env") === "production") {
-        app.set("trust proxy", 1); // trust first proxy
+        app.set("trust proxy", 1);
         if (sessionSettings.cookie) {
-            sessionSettings.cookie.secure = true; // serve secure cookies
+            sessionSettings.cookie.secure = true;
         }
     }
 
@@ -49,7 +49,7 @@ export function setupAuth(app: Express) {
                 {
                     clientID: process.env.GOOGLE_CLIENT_ID,
                     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-                    callbackURL: "/auth/google/callback",
+                    callbackURL: "/api/auth/callback/google",
                 },
                 async (accessToken, refreshToken, profile, done) => {
                     try {
@@ -84,7 +84,7 @@ export function setupAuth(app: Express) {
                 {
                     clientID: process.env.GITHUB_CLIENT_ID,
                     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-                    callbackURL: "/auth/github/callback",
+                    callbackURL: "/api/auth/callback/github",
                     scope: ["user:email"],
                 },
                 async (accessToken: string, refreshToken: string, profile: any, done: any) => {
@@ -94,15 +94,23 @@ export function setupAuth(app: Express) {
 
                         if (!user) {
                             const email = profile.emails?.[0]?.value || "";
-                            const username = profile.username || profile.displayName;
-                            const avatarUrl = profile.photos?.[0]?.value;
+                            // Check if a user with this email already exists
+                            const existingUser = await storage.getUserByEmail(email);
 
-                            user = await storage.createUser({
-                                username,
-                                email,
-                                githubId,
-                                avatarUrl,
-                            });
+                            if (existingUser) {
+                                // Link the GitHub account to the existing user
+                                user = await storage.updateUser(existingUser.id, { githubId });
+                            } else {
+                                const username = profile.username || profile.displayName;
+                                const avatarUrl = profile.photos?.[0]?.value;
+
+                                user = await storage.createUser({
+                                    username,
+                                    email,
+                                    githubId,
+                                    avatarUrl,
+                                });
+                            }
                         }
                         return done(null, user);
                     } catch (err) {
