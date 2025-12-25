@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
+import Dashboard from "@/pages/Dashboard";
 import ProjectCanvas from "@/pages/ProjectCanvas";
 import AuthPage from "@/pages/AuthPage";
 import { useUser } from "@/hooks/use-user";
@@ -33,6 +34,9 @@ function Router() {
     <Switch>
       <Route path="/auth" component={AuthPage} />
       <Route path="/" component={Home} />
+      <Route path="/dashboard">
+        <ProtectedRoute component={Dashboard} />
+      </Route>
       <Route path="/projects/:id">
         {(params) => <ProtectedRoute component={ProjectCanvas} params={params} />}
       </Route>

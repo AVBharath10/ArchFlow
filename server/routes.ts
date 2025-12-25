@@ -137,5 +137,22 @@ export async function registerRoutes(
     }
   });
 
+  app.delete("/api/projects/:id", isAuthenticated, async (req, res) => {
+    const projectId = Number(req.params.id);
+    const existing = await storage.getProject(projectId);
+
+    if (!existing) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // Check ownership
+    if (existing.userId !== (req.user as any).id) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    await storage.deleteProject(projectId);
+    res.sendStatus(204);
+  });
+
   return httpServer;
 }

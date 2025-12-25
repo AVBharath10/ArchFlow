@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, buildUrl, type InsertProject } from "@shared/routes";
+import { api, buildUrl } from "@shared/routes";
+import { type InsertProject } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
 export function useProjects() {
@@ -38,12 +39,12 @@ export function useCreateProject() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      
+
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.message || "Failed to create project");
       }
-      
+
       return api.projects.create.responses[201].parse(await res.json());
     },
     onSuccess: (data) => {
@@ -90,6 +91,37 @@ export function useUpdateProject() {
       toast({
         title: "Save failed",
         description: "Could not save your changes. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useDeleteProject() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(buildUrl("/api/projects/:id", { id }), {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to delete project");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.projects.list.path] });
+      toast({
+        title: "Project deleted",
+        description: "The project has been permanently removed.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Delete failed",
+        description: error.message,
         variant: "destructive",
       });
     },

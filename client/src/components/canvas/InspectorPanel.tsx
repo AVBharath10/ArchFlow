@@ -1,14 +1,15 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { Node } from 'reactflow';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Plus, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface InspectorPanelProps {
   selectedNode: Node | null;
@@ -17,11 +18,34 @@ interface InspectorPanelProps {
 }
 
 export function InspectorPanel({ selectedNode, onUpdateNode, onDeleteNode }: InspectorPanelProps) {
-  const { register, handleSubmit, reset, setValue, watch } = useForm();
-  
+  const { register, control, handleSubmit, reset, setValue, watch } = useForm({
+    defaultValues: {
+      label: '',
+      description: '',
+      method: 'GET',
+      path: '',
+      summary: '',
+      fields: [],
+      metadata: {}
+    }
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "fields"
+  });
+
+  // Watch metadata for custom rendering/handling since it is a Record<string, string>
+  const metadata = watch('metadata') || {};
+
   useEffect(() => {
     if (selectedNode) {
-      reset(selectedNode.data);
+      // Ensure fields is an array for model nodes, even if empty
+      const data = { ...selectedNode.data };
+      if (selectedNode.type === 'model' && !Array.isArray(data.fields)) {
+        data.fields = [];
+      }
+      reset(data);
     }
   }, [selectedNode, reset]);
 
@@ -43,17 +67,32 @@ export function InspectorPanel({ selectedNode, onUpdateNode, onDeleteNode }: Ins
     onUpdateNode(selectedNode.id, data);
   };
 
-  // Watch for live updates if desired, or just use onBlur/onSubmit
-  // For now, let's trigger updates on form submit or blur inputs
-  
   const handleBlur = handleSubmit(onSubmit);
 
+  const addMetadata = () => {
+    const key = prompt("Enter metadata key:");
+    if (key) {
+      const value = prompt("Enter metadata value:");
+      if (value) {
+        setValue(`metadata.${key}`, value, { shouldDirty: true });
+        handleSubmit(onSubmit)();
+      }
+    }
+  };
+
+  const removeMetadata = (key: string) => {
+    const newMetadata = { ...metadata };
+    delete newMetadata[key];
+    setValue('metadata', newMetadata, { shouldDirty: true });
+    handleSubmit(onSubmit)();
+  };
+
   return (
-    <div className="w-[320px] border-l border-border bg-card flex flex-col h-full shadow-xl z-10">
+    <div className="w-[320px] border-l border-border bg-card flex flex-col h-full shadow-xl z-20">
       <div className="p-4 border-b border-border bg-card/50 backdrop-blur-sm">
         <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Properties</h3>
       </div>
-      
+
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-6">
           <form onBlur={handleBlur} className="space-y-4">
@@ -67,14 +106,44 @@ export function InspectorPanel({ selectedNode, onUpdateNode, onDeleteNode }: Ins
 
             {/* Service Specific */}
             {selectedNode.type === 'service' && (
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea 
-                  {...register('description')} 
-                  placeholder="What does this service do?" 
-                  className="min-h-[100px] resize-none"
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <Textarea
+                    {...register('description')}
+                    placeholder="What does this service do?"
+                    className="min-h-[100px] resize-none"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Metadata</Label>
+                    <Button type="button" variant="outline" size="icon" className="h-6 w-6" onClick={addMetadata}>
+                      <Plus className="w-3 h-3" />
+                    </Button>
+                  </div>
+                  <div className="space-y-1">
+                    {Object.entries(metadata).map(([key, value]) => (
+                      <div key={key} className="flex items-center gap-2 bg-muted/50 p-2 rounded text-xs group">
+                        <span className="font-semibold">{key}:</span>
+                        <span className="flex-1 truncate">{value as string}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeMetadata(key)}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                    {Object.keys(metadata).length === 0 && (
+                      <div className="text-xs text-muted-foreground italic">No metadata keys</div>
+                    )}
+                  </div>
+                </div>
+              </>
             )}
 
             {/* Endpoint Specific */}
@@ -82,11 +151,11 @@ export function InspectorPanel({ selectedNode, onUpdateNode, onDeleteNode }: Ins
               <>
                 <div className="space-y-2">
                   <Label>HTTP Method</Label>
-                  <Select 
+                  <Select
                     onValueChange={(val) => {
                       setValue('method', val);
                       handleSubmit(onSubmit)();
-                    }} 
+                    }}
                     defaultValue={selectedNode.data.method}
                   >
                     <SelectTrigger>
@@ -115,13 +184,58 @@ export function InspectorPanel({ selectedNode, onUpdateNode, onDeleteNode }: Ins
             {/* Model Specific */}
             {selectedNode.type === 'model' && (
               <div className="space-y-2">
-                <Label>Schema Definition</Label>
-                <Textarea 
-                  {...register('fields')} 
-                  placeholder="id: string, created_at: date" 
-                  className="font-mono text-xs min-h-[150px]"
-                />
-                <p className="text-[10px] text-muted-foreground">Comma separated fields.</p>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Schema Fields</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={() => append({ name: 'new_field', type: 'String', required: false })} className="h-7 text-xs">
+                    <Plus className="w-3 h-3 mr-1" /> Add
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  {fields.map((field, index) => (
+                    <div key={field.id} className="relative bg-muted/30 p-2 rounded border border-border/50">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1 h-5 w-5 text-muted-foreground hover:text-destructive"
+                        onClick={() => remove(index)}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                      <div className="grid gap-2">
+                        <div className="grid grid-cols-[1fr_80px] gap-2">
+                          <Input
+                            {...register(`fields.${index}.name`)}
+                            placeholder="Field Name"
+                            className="h-7 text-xs"
+                          />
+                          <Input
+                            {...register(`fields.${index}.type`)}
+                            placeholder="Type"
+                            className="h-7 text-xs"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            id={`required-${index}`}
+                            onCheckedChange={(checked) => {
+                              setValue(`fields.${index}.required`, checked === true);
+                              handleSubmit(onSubmit)();
+                            }}
+                            defaultChecked={field.required}
+                          />
+                          <Label htmlFor={`required-${index}`} className="text-xs font-normal cursor-pointer">Required Field</Label>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {fields.length === 0 && (
+                    <div className="text-xs text-muted-foreground text-center py-4 border border-dashed rounded">
+                      No fields defined.
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </form>
@@ -129,9 +243,9 @@ export function InspectorPanel({ selectedNode, onUpdateNode, onDeleteNode }: Ins
       </ScrollArea>
 
       <div className="p-4 border-t border-border bg-muted/10">
-        <Button 
-          variant="destructive" 
-          className="w-full gap-2" 
+        <Button
+          variant="destructive"
+          className="w-full gap-2"
           onClick={() => onDeleteNode(selectedNode.id)}
         >
           <Trash2 className="w-4 h-4" /> Delete Node

@@ -47,6 +47,7 @@ export type NodeData = ServiceData | EndpointData | ModelData;
 
 export interface ServiceData {
   description?: string;
+  metadata?: Record<string, string>;
 }
 
 export interface EndpointData {
@@ -55,8 +56,14 @@ export interface EndpointData {
   summary?: string;
 }
 
+export interface ModelField {
+  name: string;
+  type: string;
+  required: boolean;
+}
+
 export interface ModelData {
-  fields: string; // e.g. "id: string, name: string"
+  fields: ModelField[];
 }
 
 export interface CanvasEdge {

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { SiGoogle, SiGithub } from "react-icons/si";
 import { Redirect } from "wouter";
 import { Link } from "wouter";
-import { Loader2, Network, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function AuthPage() {
@@ -44,8 +44,8 @@ export default function AuthPage() {
                 >
                     <div className="flex justify-center mb-8">
                         <div className="flex items-center gap-3 font-bold text-2xl tracking-tight">
-                            <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-primary to-violet-400 flex items-center justify-center shadow-lg shadow-primary/25">
-                                <Network className="w-6 h-6 text-white" />
+                            <div className="w-12 h-12 flex items-center justify-center">
+                                <img src="/logo.png" alt="ArchFlow" className="w-12 h-12 object-contain" />
                             </div>
                             <span className="text-foreground">ArchFlow</span>
                         </div>

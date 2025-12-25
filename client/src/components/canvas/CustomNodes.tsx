@@ -31,9 +31,18 @@ export const ServiceNode = memo(({ data, selected }: NodeProps<CanvasNode['data'
       </div>
       <div className="p-4">
         <div className="font-medium mb-1">{(data as any).label || 'Unnamed Service'}</div>
-        <p className="text-xs text-muted-foreground line-clamp-2">
+        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
           {(data as any).description || 'No description provided.'}
         </p>
+        {(data as any).metadata && Object.keys((data as any).metadata).length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {Object.entries((data as any).metadata).map(([key, value]) => (
+              <Badge key={key} variant="secondary" className="text-[10px] px-1 py-0 h-5 font-normal">
+                {key}: {value as string}
+              </Badge>
+            ))}
+          </div>
+        )}
       </div>
       <Handle type="source" position={Position.Bottom} className="!bg-muted-foreground" />
     </div>
@@ -82,13 +91,19 @@ export const ModelNode = memo(({ data, selected }: NodeProps<CanvasNode['data']>
       <div className="p-3">
         <div className="font-medium text-sm mb-2">{(data as any).label}</div>
         <div className="space-y-1">
-          {((data as any).fields || '').split(',').map((field: string, i: number) => (
-            <div key={i} className="text-xs font-mono text-muted-foreground flex items-center gap-1.5">
-              <div className="w-1 h-1 rounded-full bg-border" />
-              {field.trim()}
-            </div>
-          ))}
-          {!(data as any).fields && <span className="text-xs text-muted-foreground italic">No fields</span>}
+          {Array.isArray((data as any).fields) && (data as any).fields.length > 0 ? (
+            ((data as any).fields).map((field: any, i: number) => (
+              <div key={i} className="text-xs font-mono text-muted-foreground flex items-center justify-between gap-1.5">
+                <div className="flex items-center gap-1.5">
+                  <div className={clsx("w-1 h-1 rounded-full", field.required ? "bg-primary" : "bg-muted-foreground/50")} />
+                  <span className={clsx(field.required && "font-semibold text-foreground")}>{field.name}</span>
+                </div>
+                <span className="text-[10px] opacity-70">{field.type}</span>
+              </div>
+            ))
+          ) : (
+            <span className="text-xs text-muted-foreground italic">No fields defined</span>
+          )}
         </div>
       </div>
       <Handle type="source" position={Position.Right} className="!bg-muted-foreground" />

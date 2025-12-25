@@ -42,7 +42,6 @@ export function setupAuth(app: Express) {
         }
     });
 
-    // Google Strategy
     if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         passport.use(
             new GoogleStrategy(
@@ -77,7 +76,6 @@ export function setupAuth(app: Express) {
         );
     }
 
-    // GitHub Strategy
     if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
         passport.use(
             new GitHubStrategy(
