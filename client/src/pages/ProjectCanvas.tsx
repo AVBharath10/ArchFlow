@@ -30,9 +30,12 @@ import {
   Loader2,
   Box,
   Layers,
-  LogOut
+  LogOut,
+  Image as ImageIcon,
+  StickyNote
 } from "lucide-react";
-import { nodeTypes, ServiceNode, EndpointNode, ModelNode } from "@/components/canvas/CustomNodes";
+import { nodeTypes, ServiceNode, EndpointNode, ModelNode, ImageNode, StickyNoteNode } from "@/components/canvas/CustomNodes";
+import { AssetManagerPanel } from '@/components/canvas/AssetManagerPanel';
 import { InspectorPanel } from "@/components/canvas/InspectorPanel";
 import { Link } from "wouter";
 import {
@@ -48,6 +51,8 @@ const NODE_TYPES = {
   service: ServiceNode,
   endpoint: EndpointNode,
   model: ModelNode,
+  image: ImageNode,
+  stickyNote: StickyNoteNode,
 };
 
 function CanvasContent({ projectId }: { projectId: number }) {
@@ -58,6 +63,7 @@ function CanvasContent({ projectId }: { projectId: number }) {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [showAssets, setShowAssets] = useState(false);
 
   const { data: user } = useUser();
   const logout = useLogout();
@@ -112,7 +118,7 @@ function CanvasContent({ projectId }: { projectId: number }) {
     setSelectedNode(null);
   }, []);
 
-  const addNode = (type: 'service' | 'endpoint' | 'model') => {
+  const addNode = (type: 'service' | 'endpoint' | 'model' | 'stickyNote') => {
     const id = `${type}-${Date.now()}`;
     const newNode: Node = {
       id,
@@ -125,7 +131,9 @@ function CanvasContent({ projectId }: { projectId: number }) {
         ? { label: 'New Service', description: '' }
         : type === 'endpoint'
           ? { label: 'New Endpoint', method: 'GET', path: '/api/resource' }
-          : { label: 'New Model', fields: 'id: string' }
+          : type === 'stickyNote'
+            ? { text: 'New Note' }
+            : { label: 'New Model', fields: 'id: string' }
     };
     setNodes((nds) => [...nds, newNode]);
   };
@@ -141,6 +149,21 @@ function CanvasContent({ projectId }: { projectId: number }) {
         return node;
       })
     );
+  };
+
+  const addAssetNode = (url: string, name: string) => {
+    const id = `image-${Date.now()}`;
+    const newNode: Node = {
+      id,
+      type: 'image',
+      position: {
+        x: Math.random() * 400 + 100,
+        y: Math.random() * 400 + 100
+      },
+      data: { label: name, url }
+    };
+    setNodes((nds) => [...nds, newNode]);
+    setShowAssets(false);
   };
 
   const deleteNode = (id: string) => {
@@ -265,6 +288,20 @@ function CanvasContent({ projectId }: { projectId: number }) {
             <TooltipContent side="right">Add Model</TooltipContent>
           </Tooltip>
 
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => addNode('stickyNote')}
+                className="hover:bg-primary/20 hover:text-primary"
+              >
+                <StickyNote className="w-5 h-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Add Sticky Note</TooltipContent>
+          </Tooltip>
+
           <div className="w-8 h-[1px] bg-border my-1" />
 
           <Tooltip>
@@ -274,6 +311,22 @@ function CanvasContent({ projectId }: { projectId: number }) {
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">Layers</TooltipContent>
+          </Tooltip>
+
+          <div className="w-8 h-[1px] bg-border my-1" />
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={showAssets ? "secondary" : "ghost"}
+                size="icon"
+                onClick={() => setShowAssets(!showAssets)}
+                className={showAssets ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary"}
+              >
+                <ImageIcon className="w-5 h-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Assets</TooltipContent>
           </Tooltip>
         </div>
 
@@ -321,6 +374,14 @@ function CanvasContent({ projectId }: { projectId: number }) {
           onUpdateNode={updateNodeData}
           onDeleteNode={deleteNode}
         />
+
+        {/* Asset Manager Panel */}
+        {showAssets && (
+          <AssetManagerPanel
+            onAddAssetNode={addAssetNode}
+            onClose={() => setShowAssets(false)}
+          />
+        )}
       </div>
     </div>
   );

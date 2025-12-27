@@ -30,17 +30,17 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
 // === Canvas Types ===
-export type NodeType = 'service' | 'endpoint' | 'model';
+export type NodeType = 'service' | 'endpoint' | 'model' | 'image' | 'stickyNote';
 
 export interface CanvasNode {
   id: string;
   type: NodeType;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  label?: string;
+  position: { x: number; y: number };
+  width?: number;
+  height?: number;
   data: NodeData;
+  // Allow for ReactFlow specific properties that might be saved
+  [key: string]: any;
 }
 
 export type NodeData = ServiceData | EndpointData | ModelData;

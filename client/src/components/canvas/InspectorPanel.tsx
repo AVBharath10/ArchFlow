@@ -26,7 +26,8 @@ export function InspectorPanel({ selectedNode, onUpdateNode, onDeleteNode }: Ins
       path: '',
       summary: '',
       fields: [],
-      metadata: {}
+      metadata: {},
+      text: ''
     }
   });
 
@@ -97,7 +98,7 @@ export function InspectorPanel({ selectedNode, onUpdateNode, onDeleteNode }: Ins
         <div className="p-4 space-y-6">
           <form onBlur={handleBlur} className="space-y-4">
             {/* Common Fields */}
-            {selectedNode.type !== 'endpoint' && (
+            {selectedNode.type !== 'endpoint' && selectedNode.type !== 'stickyNote' && (
               <div className="space-y-2">
                 <Label>Label</Label>
                 <Input {...register('label')} placeholder="Node Name" />
@@ -236,6 +237,18 @@ export function InspectorPanel({ selectedNode, onUpdateNode, onDeleteNode }: Ins
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Sticky Note Specific */}
+            {selectedNode.type === 'stickyNote' && (
+              <div className="space-y-2">
+                <Label>Note Text</Label>
+                <Textarea
+                  {...register('text')}
+                  placeholder="Enter note content..."
+                  className="min-h-[150px] resize-none"
+                />
               </div>
             )}
           </form>

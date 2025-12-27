@@ -111,8 +111,75 @@ export const ModelNode = memo(({ data, selected }: NodeProps<CanvasNode['data']>
   );
 });
 
+export const ImageNode = memo(({ data, selected }: NodeProps<CanvasNode['data']>) => {
+  return (
+    <div className={clsx(
+      "relative group transition-all duration-200",
+      selected ? "ring-2 ring-primary ring-offset-2 rounded-lg" : ""
+    )}>
+      <Handle type="target" position={Position.Top} className="!bg-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle type="target" position={Position.Left} className="!bg-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+
+      <div className="p-1">
+        <div className="flex items-center justify-center">
+          <img
+            src={(data as any).url}
+            alt={(data as any).label}
+            className="object-contain drop-shadow-sm transition-transform hover:scale-105"
+            style={{
+              width: (data as any).width || 64,
+              height: (data as any).height || 64,
+              maxWidth: 200,
+              maxHeight: 200
+            }}
+          />
+        </div>
+        {(data as any).label && (
+          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-medium text-muted-foreground bg-background/90 backdrop-blur px-2 py-0.5 rounded-full border border-border shadow-sm whitespace-nowrap pointer-events-none">
+            {(data as any).label}
+          </div>
+        )}
+      </div>
+
+      <Handle type="source" position={Position.Right} className="!bg-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle type="source" position={Position.Bottom} className="!bg-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+    </div>
+  );
+});
+export const StickyNoteNode = memo(
+  ({ data, selected }: NodeProps<CanvasNode['data']>) => {
+    return (
+      <div
+        className={clsx(
+          "w-[220px] min-h-[120px] bg-yellow-200/80 border border-yellow-300 rounded-md shadow-sm p-3 text-sm text-yellow-900",
+          selected && "ring-2 ring-primary/30"
+        )}
+      >
+        <Handle
+          type="target"
+          position={Position.Top}
+          className="!bg-yellow-400"
+        />
+
+        <div className="whitespace-pre-wrap break-words">
+          {(data as any)?.text || "Empty note"}
+        </div>
+
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          className="!bg-yellow-400"
+        />
+      </div>
+    );
+  }
+);
+
+
 export const nodeTypes = {
   service: ServiceNode,
   endpoint: EndpointNode,
   model: ModelNode,
+  image: ImageNode,
+  stickyNote: StickyNoteNode,
 };
