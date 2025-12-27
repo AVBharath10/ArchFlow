@@ -110,7 +110,7 @@ export default function Home() {
               </div>
             ) : (
               <>
-                <a href="https://github.com" target="_blank" className="text-muted-foreground hover:text-foreground transition-colors p-2">
+                <a href="https://github.com/AVBharath10/ArchFlow" target="_blank" className="text-muted-foreground hover:text-foreground transition-colors p-2">
                   <Github className="w-5 h-5" />
                 </a>
                 <Link href="/auth">
